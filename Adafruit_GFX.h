@@ -10,6 +10,23 @@
 
 #define swap(a, b) { int16_t t = a; a = b; b = t; }
 
+// Currently there are two fonts available: the default (normal) font
+// is a 5x7 fixed width font using the DOS (CP850) encoding
+
+// The large font is 7x15 including only the digits (0-9), the "-",
+// "." and the degree (°) sign, which is encoded at codepoint 0xf7 -
+// useful for displaying e.g. temperature data.
+
+typedef enum {
+	FONT_NORMAL = 0,
+	FONT_LARGE_DIGITS
+} FONT_NAME;
+
+typedef struct {
+	uint8_t width;
+	uint8_t height;
+} char_size_t;
+
 class Adafruit_GFX : public Print {
 
  public:
@@ -50,7 +67,7 @@ class Adafruit_GFX : public Print {
       int16_t w, int16_t h, uint16_t color),
     drawBitmap(int16_t x, int16_t y, const uint8_t *bitmap,
       int16_t w, int16_t h, uint16_t color, uint16_t bg),
-    drawXBitmap(int16_t x, int16_t y, const uint8_t *bitmap, 
+    drawXBitmap(int16_t x, int16_t y, const uint8_t *bitmap,
       int16_t w, int16_t h, uint16_t color),
     drawChar(int16_t x, int16_t y, unsigned char c, uint16_t color,
       uint16_t bg, uint8_t size),
@@ -59,7 +76,8 @@ class Adafruit_GFX : public Print {
     setTextColor(uint16_t c, uint16_t bg),
     setTextSize(uint8_t s),
     setTextWrap(boolean w),
-    setRotation(uint8_t r);
+	setRotation(uint8_t r),
+	setFont(FONT_NAME name) { m_font = name; };
 
 #if ARDUINO >= 100
   virtual size_t write(uint8_t);
@@ -85,6 +103,9 @@ class Adafruit_GFX : public Print {
     rotation;
   boolean
     wrap; // If set, 'wrap' text at right edge of display
+  byte m_font = 0;
+  // get the size of one char for the selected font
+  char_size_t getCharSize(void);
 };
 
 #endif // _ADAFRUIT_GFX_H
