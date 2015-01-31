@@ -34,6 +34,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "Adafruit_GFX.h"
 #include "glcdfont.c"
 #include "glcdfont_digits_16x8.h"
+#include "glcdfont_digits_3x5.h"
 #ifdef __AVR__
  #include <avr/pgmspace.h>
 #else
@@ -386,9 +387,9 @@ void Adafruit_GFX::drawBitmap(int16_t x, int16_t y,
   }
 }
 
-// get the size of one char for the selected font
+// get the size of one char for the selected font incl. padding
 char_size_t Adafruit_GFX::getCharSize(void) {
-	const char_size_t char_size[] = { {6,8}, {9,16} };
+	const char_size_t char_size[] = { {6,8}, {9,16}, {4,6} };
 	return char_size[m_font];
 }
 
@@ -445,6 +446,10 @@ void Adafruit_GFX::drawChar(int16_t x, int16_t y, unsigned char c,
      ((y + char_size.height * size - 1) < 0))   // Clip top
     return;
 
+  uint8_t glyph_offset = 0;
+  uint8_t glyph_trim = 0;
+  uint8_t glyph_width;
+
   switch(m_font) {
   case FONT_NORMAL:
 	  for (int8_t i=0; i<6; i++ ) {
@@ -473,8 +478,6 @@ void Adafruit_GFX::drawChar(int16_t x, int16_t y, unsigned char c,
 	  break;
 
   case FONT_LARGE_DIGITS:
-	  uint8_t glyph_offset = 0;
-	  uint8_t glyph_trim = 0;
 
 	  // we do support only the digits 0-9, "-" and "."
 	  if (c == '-') {
@@ -491,7 +494,7 @@ void Adafruit_GFX::drawChar(int16_t x, int16_t y, unsigned char c,
 		  c = 12;
 	  } else if (c >= '0' && c <= '9') {
 		  c = c - '0';
-	  } else goto end;
+	  } else return;
 
 	  cursor_x -= glyph_offset + glyph_trim;
 	  for (int8_t i=0; i<8-glyph_trim; i++ ) {
@@ -514,7 +517,47 @@ void Adafruit_GFX::drawChar(int16_t x, int16_t y, unsigned char c,
 			  line >>= 1;
 		  }
 	  }
-  end:
+	  break;
+
+  case FONT_SMALL_DIGITS:
+	  if (c == '-') {
+		  c = 11;
+		  glyph_width=2;
+	  } else if (c == '.') {
+		  c = 10;
+		  glyph_width=1;
+	  } else if (c == ':') {
+		  c = 13;
+		  glyph_width=1;
+	  } else if (c == 0xf7) { // degree special char
+		  c = 12;
+		  glyph_width=2;
+	  } else if (c >= '0' && c <= '9') {
+		  c = c - '0';
+		  glyph_width=3;
+	  } else return;
+
+	  cursor_x -= (3-glyph_width);
+	  for (int8_t i=0; i<glyph_width; i++ ) {
+		  uint16_t line;
+		  line = pgm_read_byte(font_digits3x5[c]+i);
+		  for (int8_t j = 0; j<5; j++) {
+			  if (line & 0x1) {
+				  if (size == 1) // default size
+					  drawPixel(x+i, y+j, color);
+				  else {  // big size
+					  fillRect(x+(i*size), y+(j*size), size, size, color);
+				  }
+			  } else if (bg != color) {
+				  if (size == 1) // default size
+					  drawPixel(x+i, y+j, bg);
+				  else {  // big size
+					  fillRect(x+i*size, y+j*size, size, size, bg);
+				  }
+			  }
+			  line >>= 1;
+		  }
+	  }
 	  break;
   }
 }

@@ -17,9 +17,13 @@
 // "." and the degree (°) sign, which is encoded at codepoint 0xf7 -
 // useful for displaying e.g. temperature data.
 
+// The small digits font is a 3x5 pixel digit font including the same
+// charset as the large font described above.
+
 typedef enum {
 	FONT_NORMAL = 0,
-	FONT_LARGE_DIGITS
+	FONT_LARGE_DIGITS,
+	FONT_SMALL_DIGITS
 } FONT_NAME;
 
 typedef struct {
