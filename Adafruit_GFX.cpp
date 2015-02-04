@@ -389,7 +389,7 @@ void Adafruit_GFX::drawBitmap(int16_t x, int16_t y,
 
 // get the size of one char for the selected font incl. padding
 char_size_t Adafruit_GFX::getCharSize(void) {
-	const char_size_t char_size[] = { {6,8}, {9,16}, {4,6} };
+	const char_size_t char_size[] = { {6,8}, {9,14}, {4,6} };
 	return char_size[m_font];
 }
 
@@ -481,12 +481,12 @@ void Adafruit_GFX::drawChar(int16_t x, int16_t y, unsigned char c,
 
 	  // we do support only the digits 0-9, "-" and "."
 	  if (c == '-') {
-		  glyph_offset = 1;
-		  glyph_trim = 1;
+		  glyph_offset = 2;
+		  glyph_trim = 2;
 		  c = 11;
 	  } else if (c == '.') {
-		  glyph_offset = 1;
-		  glyph_trim = 1;
+		  glyph_offset = 2;
+		  glyph_trim = 2;
 		  c = 10;
 	  } else if (c == 0xf7) { // degree special char
 		  glyph_offset = 2;
@@ -503,7 +503,7 @@ void Adafruit_GFX::drawChar(int16_t x, int16_t y, unsigned char c,
 		  for (int8_t j = 0; j<16; j++) {
 			  if (line & 0x1) {
 				  if (size == 1) // default size
-					  drawPixel(x+i-glyph_offset, y+j, color);
+					  drawPixel(x+i-glyph_offset, y+j-1, color);
 				  else {  // big size
 					  fillRect(x+((i-glyph_offset)*size), y+(j*size), size, size, color);
 				  }
